@@ -9,6 +9,17 @@ import re
 from django import forms
 
 
+# Creating a django form that allows the user to create a new page.
+class NewPageForm(forms.Form):
+    title = forms.CharField(label="Page Title", required=True, widget=forms.TextInput(attrs={'class': 'form-control col-2 mb-3'}))
+    content = forms.CharField(label="Page Content", required=True, widget=forms.Textarea(attrs={'class': 'form-control mb-3', 'rows': '20'}))
+
+
+# Creating a django form that allows the user to edit a page.
+class EditPageForm(forms.Form):
+    content = forms.CharField(label = "Page content", required=True, widget=forms.Textarea(attrs={'class': 'form-control mb-3', 'rows': '20'}))
+
+
 def index(request):
     return render(request, "encyclopedia/index.html", {
         "entries": util.list_entries()
@@ -24,10 +35,11 @@ def entry_page(request, title):
     if util.get_entry(title) != None:
         markdowner = Markdown()
         html = markdowner.convert(util.get_entry(title))
-        html = f"<head><title>{title}</title></head>\n" + html
-        return HttpResponse(html)
+        return render(request, "encyclopedia/entry_page_layout.html", {
+            "html": html, "title": title
+        })
     else:
-        raise Http404("The requested page was not found")
+        raise Http404("The page was not found")
 
 
 def search(request):
@@ -51,11 +63,6 @@ def search(request):
         })
 
 
-# Creating a django form that allows the user to create a new page.
-class NewPageForm(forms.Form):
-    title = forms.CharField(label="Page Title", required=True, widget=forms.TextInput(attrs={'class': 'form-control col-2 mb-3'}))
-    content = forms.CharField(label="Page Content", required=True, widget=forms.Textarea(attrs={'class': 'form-control mb-3', 'rows': '20'}))
-
 def new_page(request):
     return render(request, "encyclopedia/new_page.html", {
         "form": NewPageForm()
@@ -63,16 +70,22 @@ def new_page(request):
 
 
 def submit_newpage(request):
+    """
+    This function is called when the user clicks the submit button,
+    on new_page.html.
+    """
     if request.method == "POST":
         # Take in the data the user submitted and save it as form.
         form = NewPageForm(request.POST)
         # Check if form data is valid (server-side).
         if form.is_valid():
-            # form.cleaned_data returns a dictionary of validated form input fields and their values.
+            # form.cleaned_data returns a dictionary of validated form input fields 
+            # and their values.
             title = form.cleaned_data["title"]
             content = form.cleaned_data["content"]
             # TODO: take into account .strip(), possibly affecting code in other places.
-            # Convert both the title and all the file names to lowercase to make the comparision case insensitive.
+            # Convert both the title and all the file names to lowercase 
+            # to make the comparision case insensitive.
             if title.lower() in [entry.lower() for entry in util.list_entries()]:
                 # re-render the page with existing information, with an error message.
                 error_message = "This title already exists. Please choose another one."
@@ -84,7 +97,8 @@ def submit_newpage(request):
                 # If the url doesn't start with a slash, it will be treated as a relative url.
                 return HttpResponseRedirect(f"/wiki/{title}")
         else:
-            # If the form is invalid, re-render the page with existing information, with an error message.
+            # If the form is invalid, re-render the page with existing information, 
+            # with an error message.
             error_message = "The form is invalid. Please make sure you filled it correctly."
             return render(request, "encyclopedia/new_page.html", {
                 "form": form, "error_message": error_message
@@ -92,5 +106,42 @@ def submit_newpage(request):
     # if the user typed the url path (request.method=get).
     else:
         return HttpResponseRedirect(reverse("wiki:new_page"))
-        # The reverse function allows to retrieve url details from urls.py file through the name value provided there.
+        # The reverse function allows to retrieve url details from urls.py file 
+        # through the name value provided there.
     
+
+
+def edit_page(request, title):
+    """
+    Create a form to let the user edit the content of a given page.
+    The content field is pre-populated with the existing 
+    Markdown content of the page.
+    """
+    current_content = util.get_entry(title)
+    return render(request, "encyclopedia/edit_page.html", {
+        "title": title,
+        "form": EditPageForm(initial={"content": current_content})
+    })
+
+
+def save_changes(request, title):
+    """
+    This function is called when the user clicks the save button,
+    on edit_page.html.
+    """
+    if request.method == "POST":
+        form = EditPageForm(request.POST)
+        if form.is_valid():
+            content = form.cleaned_data["content"]
+            util.save_entry(title, content)
+            return HttpResponseRedirect(f"/wiki/{title}")
+        else:
+            error_message = "The form is invalid. Please make sure you filled it correctly."
+            return render(request, "encyclopedia/edit_page.html", {
+                "error_message": error_message,
+                "form": form
+            })
+    else:
+        # if the user typed the url path (request.method=get).
+        return HttpResponseRedirect(reverse("wiki:index"))
+     
