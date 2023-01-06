@@ -7,6 +7,7 @@ from django.urls import reverse
 from django.core.files.storage import default_storage
 import re
 from django import forms
+import random
 
 
 # Creating a django form that allows the user to create a new page.
@@ -52,7 +53,7 @@ def search(request):
     """
     q = request.GET.get("q", "")
     if util.get_entry(q) != None:
-        return HttpResponseRedirect(f"/wiki/{q}")
+        return HttpResponseRedirect(reverse("wiki:entry_page", kwargs={"title":q}))
     else:
         _, filenames = default_storage.listdir("entries")
         filtered_list = list(sorted(re.sub(r"\.md$", "", filename)
@@ -94,8 +95,7 @@ def submit_newpage(request):
                 })
             else:
                 util.save_entry(title, content)
-                # If the url doesn't start with a slash, it will be treated as a relative url.
-                return HttpResponseRedirect(f"/wiki/{title}")
+                return HttpResponseRedirect(reverse("wiki:entry_page", kwargs={"title":title}))
         else:
             # If the form is invalid, re-render the page with existing information, 
             # with an error message.
@@ -134,7 +134,7 @@ def save_changes(request, title):
         if form.is_valid():
             content = form.cleaned_data["content"]
             util.save_entry(title, content)
-            return HttpResponseRedirect(f"/wiki/{title}")
+            return HttpResponseRedirect(reverse("wiki:entry_page", kwargs={'title': title}))
         else:
             error_message = "The form is invalid. Please make sure you filled it correctly."
             return render(request, "encyclopedia/edit_page.html", {
@@ -144,4 +144,9 @@ def save_changes(request, title):
     else:
         # if the user typed the url path (request.method=get).
         return HttpResponseRedirect(reverse("wiki:index"))
+
+
+def random_page(request):
+    entry_page = random.choice(util.list_entries())
+    return HttpResponseRedirect(reverse("wiki:entry_page", kwargs={'title': entry_page}))
      
