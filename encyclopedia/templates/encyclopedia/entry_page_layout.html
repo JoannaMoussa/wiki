@@ -7,9 +7,7 @@
 {% block body %}
     <h1 class="text-center">{{ title }}</h1>
     <hr/>
-    {% autoescape off %}
-        {{ html }}
-    {% endautoescape %}
+    {{ html|safe }}
     <div class="d-flex justify-content-end">
         <a class="btn btn-primary" href="{% url 'wiki:edit_page' title %}"><i class="bi bi-pencil"></i> Edit</a>
     </div>
