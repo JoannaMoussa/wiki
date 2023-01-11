@@ -6,13 +6,10 @@
 
 
 {% block body %}
-    {% if error_message %}
-    <div class="alert alert-danger" role="alert">{{ error_message }}</div>
-    {% endif %}
-    <h2 class="mb-5">Create a new page</h2>
+    <h2 class="mb-5 mt-2">Create a new page</h2>
     <form action="{% url 'wiki:submit_newpage' %}" method="post">
         {% csrf_token %}
         {{ form }}
-        <input type="submit" value="Submit">
+        <input class="btn btn-primary" type="submit" value="Submit">
     </form>
 {% endblock %}

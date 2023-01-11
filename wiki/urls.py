@@ -20,3 +20,6 @@ urlpatterns = [
     path('admin/', admin.site.urls),
     path('', include("encyclopedia.urls"))
 ]
+
+# add a flag for handling the 404 error
+#handler404 = 'encyclopedia.views.error_404'

@@ -8,6 +8,9 @@ from django.core.files.storage import default_storage
 import re
 from django import forms
 import random
+from django.conf import settings
+from django.shortcuts import redirect
+from django.contrib import messages
 
 
 # Creating a django form that allows the user to create a new page.
@@ -22,6 +25,7 @@ class EditPageForm(forms.Form):
 
 
 def index(request):
+    """ Home page listing all names of encyclopedia entries."""
     return render(request, "encyclopedia/index.html", {
         "entries": util.list_entries()
     })
@@ -29,7 +33,7 @@ def index(request):
 
 def entry_page(request, title):
     """ 
-    If the user typed an existing entry title, the markdown content
+    If the user typed wiki/an existing entry title, the markdown content
     of the appropriate entry page will be converted to html and 
     displayed to the user. Otherwise an error will be raised.
     """
@@ -40,7 +44,7 @@ def entry_page(request, title):
             "html": html, "title": title
         })
     else:
-        raise Http404("The page was not found")
+        raise Http404("The requested page was not found.")
 
 
 def search(request):
@@ -54,6 +58,8 @@ def search(request):
     q = request.GET.get("q", "")
     if util.get_entry(q) != None:
         return HttpResponseRedirect(reverse("wiki:entry_page", kwargs={"title":q}))
+        # The reverse function allows to retrieve url details from urls.py file 
+        # through the name value provided there.
     else:
         _, filenames = default_storage.listdir("entries")
         filtered_list = list(sorted(re.sub(r"\.md$", "", filename)
@@ -65,6 +71,9 @@ def search(request):
 
 
 def new_page(request):
+    """ returns new_page.html containing a form 
+    that enables the user to add a new entry.
+    """
     return render(request, "encyclopedia/new_page.html", {
         "form": NewPageForm()
     })
@@ -73,7 +82,10 @@ def new_page(request):
 def submit_newpage(request):
     """
     This function is called when the user clicks the submit button,
-    on new_page.html.
+    on new_page.html. If the title of the new entry to be submitted 
+    already exists, an error message will appear and the submission 
+    will not take effect. Otherwise the entry will be saved and the 
+    user will be redirected to the new entry page.
     """
     if request.method == "POST":
         # Take in the data the user submitted and save it as form.
@@ -84,36 +96,35 @@ def submit_newpage(request):
             # and their values.
             title = form.cleaned_data["title"]
             content = form.cleaned_data["content"]
-            # TODO: take into account .strip(), possibly affecting code in other places.
             # Convert both the title and all the file names to lowercase 
             # to make the comparision case insensitive.
             if title.lower() in [entry.lower() for entry in util.list_entries()]:
                 # re-render the page with existing information, with an error message.
-                error_message = "This title already exists. Please choose another one."
+                #form['title'].label_tag(attrs={'class': 'is-invalid'})
+                messages.error(request, 'This title already exists. Please choose another one.')
                 return render(request, "encyclopedia/new_page.html", {
-                "form": form, 'error_message': error_message
+                    "form": form
                 })
             else:
                 util.save_entry(title, content)
+                messages.success(request, 'Your entry was created successfully.')
                 return HttpResponseRedirect(reverse("wiki:entry_page", kwargs={"title":title}))
         else:
             # If the form is invalid, re-render the page with existing information, 
             # with an error message.
-            error_message = "The form is invalid. Please make sure you filled it correctly."
+            messages.error(request, 'The form is invalid. Please make sure you filled it correctly.')
             return render(request, "encyclopedia/new_page.html", {
-                "form": form, "error_message": error_message
+                "form": form
             })
     # if the user typed the url path (request.method=get).
     else:
         return HttpResponseRedirect(reverse("wiki:new_page"))
-        # The reverse function allows to retrieve url details from urls.py file 
-        # through the name value provided there.
     
 
 
 def edit_page(request, title):
     """
-    Create a form to let the user edit the content of a given page.
+    Returns a form to let the user edit the content of a given page.
     The content field is pre-populated with the existing 
     Markdown content of the page.
     """
@@ -133,12 +144,12 @@ def save_changes(request, title):
         form = EditPageForm(request.POST)
         if form.is_valid():
             content = form.cleaned_data["content"]
-            util.save_entry(title, content)
+            util.save_entry(title, bytes(content, 'utf-8'))
+            messages.success(request, 'The page was edited successfully.')
             return HttpResponseRedirect(reverse("wiki:entry_page", kwargs={'title': title}))
         else:
-            error_message = "The form is invalid. Please make sure you filled it correctly."
+            messages.error(request, 'The changes are not valid.')
             return render(request, "encyclopedia/edit_page.html", {
-                "error_message": error_message,
                 "form": form
             })
     else:
@@ -147,6 +158,11 @@ def save_changes(request, title):
 
 
 def random_page(request):
+    """ Returns a random entry page."""
     entry_page = random.choice(util.list_entries())
     return HttpResponseRedirect(reverse("wiki:entry_page", kwargs={'title': entry_page}))
+
+
+#def error_404(request, exception):
+#   return render(request, '404.html')
      

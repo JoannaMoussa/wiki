@@ -1,16 +1,17 @@
-{% load static %}
+{% extends "encyclopedia/layout.html" %}
 
-<!DOCTYPE html>
+{% block title %}
+    {{ title }}
+{% endblock %}
 
-<html lang="en">
-    <head>
-        <title>{{ title }}</title>
-        <link rel="stylesheet" href="https://stackpath.bootstrapcdn.com/bootstrap/4.4.1/css/bootstrap.min.css" integrity="sha384-Vkoo8x4CGsO3+Hhxv8T/Q5PaXtkKtu6ug5TOeNV6gBiFeWPGFN9MuhOf23Q9Ifjh" crossorigin="anonymous">
-        <link href="{% static 'encyclopedia/styles.css' %}" rel="stylesheet">
-    </head>
-    <body>
-        {% autoescape off %}
-            {{ html }}
-        {% endautoescape %}
-        <a href="{% url 'wiki:edit_page' title %}">Edit page</a>
-    </body>
+{% block body %}
+    <h1 class="text-center">{{ title }}</h1>
+    <hr/>
+    {% autoescape off %}
+        {{ html }}
+    {% endautoescape %}
+    <div class="d-flex justify-content-end">
+        <a class="btn btn-primary" href="{% url 'wiki:edit_page' title %}"><i class="bi bi-pencil"></i> Edit</a>
+    </div>
+    <hr/>
+{% endblock %}
