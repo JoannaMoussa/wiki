@@ -165,4 +165,15 @@ def random_page(request):
 
 #def error_404(request, exception):
 #   return render(request, '404.html')
-     
+
+
+def delete_page(request, title):
+    """ Deletes an encyclopedia entry """
+    #This if condition is useful if the user typed the url, so typed the name of the page.
+    if title.lower() in [entry.lower() for entry in util.list_entries()]:
+        util.delete_entry(title)
+        messages.success(request, 'The entry was deleted successfully.')
+        return HttpResponseRedirect(reverse("wiki:index"))
+    else:
+        messages.error(request, 'The entry page you want to delete does not exist.')
+        return HttpResponseRedirect(reverse("wiki:index"))

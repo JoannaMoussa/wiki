@@ -10,7 +10,9 @@ This project consists of developing a Wikipedia-like online encyclopedia, in whi
     
     Encyclopedia entries contents are stored in Markdown `.md` files. When a user views an encyclopedia entry, the Markdown content will be converted into HTML before being displayed in the front-end.
     
-    **Edit entry page**: On each entry page, there is an edit button that takes the user to a page where the entry’s Markdown content can be edited in a *textarea*. The *textarea* will be pre-populated with the existing Markdown content of the page. Once the user clicks the save button, the user should be redirected to that entry’s page, with a success message .
+    **Edit entry page**: On each entry page, there is an edit button that takes the user to a page where the entry’s Markdown content can be edited in a *textarea*. The *textarea* will be pre-populated with the existing Markdown content of the page. Once the user clicks the save button, the user should be redirected to that entry’s page, with a success message.
+
+    **Delete entry page**: On each entry page, there is a delete button that lets the user delete an encyclopedia entry. Once the delete button clicked, the user is redirected to the home page with a success message stating that the entry was deleted successfully.
 
 2. **Side Bar**
 

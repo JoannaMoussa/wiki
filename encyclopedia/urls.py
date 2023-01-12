@@ -11,5 +11,6 @@ urlpatterns = [
     path("search", views.search, name="search"),
     path("newPage", views.new_page, name="new_page"),
     path("newPage/submit", views.submit_newpage, name="submit_newpage"),
-    path("randomPage", views.random_page, name="random_page")
+    path("randomPage", views.random_page, name="random_page"),
+    path("deletePage/<str:title>", views.delete_page, name="delete_page")
 ]
