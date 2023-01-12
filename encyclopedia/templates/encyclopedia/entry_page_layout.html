@@ -13,4 +13,12 @@
         <a class="btn btn-primary ml-2" href="{% url 'wiki:delete_page' title %}"><i class="bi bi-trash"></i> Delete</a>
     </div>
     <hr/>
+    {% if similar_entries %}
+        <h6 class="mt-1">You can also check:</h6>
+        <ul>
+            {% for similar_entry in similar_entries %}
+            <li><a href="/wiki/{{ similar_entry }}">{{ similar_entry }}</a></li>
+            {% endfor %}
+        </ul>
+    {% endif %}
 {% endblock %}

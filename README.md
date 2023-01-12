@@ -14,6 +14,9 @@ This project consists of developing a Wikipedia-like online encyclopedia, in whi
 
     **Delete entry page**: On each entry page, there is a delete button that lets the user delete an encyclopedia entry. Once the delete button clicked, the user is redirected to the home page with a success message stating that the entry was deleted successfully.
 
+    **Recommendations to check similar entry pages**: At the end of each entry page, users can find a list of related/similar entries to visit. The listed entries are links that take the user to the appropriate entry pages. In the current implementation, two entries are considered similar if any one of them is a substring in the other.
+    This section will not be present if there are no similar entries to the currently viewed entry.
+
 2. **Side Bar**
 
     2.1. **Search box**: Users can type a query to search for an encyclopedia entry. If the query matches the name of an encyclopedia entry, they will be redirected to that entry’s page. Otherwise, they will instead be taken to a search results page that displays a list of all encyclopedia entries that have the query as a substring.

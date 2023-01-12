@@ -40,8 +40,16 @@ def entry_page(request, title):
     if util.get_entry(title) != None:
         markdowner = Markdown()
         html = markdowner.convert(util.get_entry(title))
+        # Displaying similar entries
+        similar_entries = []
+        # remove the current title from the list of titles
+        entries = util.list_entries()
+        entries.remove(title)
+        for entry in entries:
+            if entry.lower() in title.lower() or title.lower() in entry.lower():
+                similar_entries.append(entry)
         return render(request, "encyclopedia/entry_page_layout.html", {
-            "html": html, "title": title
+            "html": html, "title": title, "similar_entries": similar_entries
         })
     else:
         raise Http404("The requested page was not found.")
